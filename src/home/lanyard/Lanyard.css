@@ -59,8 +59,9 @@
 
   .lanyard-interaction-area {
     top: clamp(6.5rem, 14vh, 8rem);
-    right: clamp(0.75rem, 4vw, 2rem);
-    width: clamp(150px, 35vw, 210px);
+    right: auto;
+    left: -2rem;
+    width: calc(100% + 2rem);
     height: clamp(250px, 44vh, 390px);
   }
 }
