@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unknown-property */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Environment, Lightformer, useGLTF, useTexture } from '@react-three/drei';
 import {
@@ -58,14 +58,22 @@ export default function Lanyard({
   lanyardWidth = 1,
   nextPageTarget = '#about'
 }) {
+  const animationTimerRef = useRef(null);
+  const pullGestureRef = useRef(null);
   const pagePullingRef = useRef(false);
   const pullStartScrollRef = useRef(0);
+  const [animationActive, setAnimationActive] = useState(true);
+  const [adaptiveDpr, setAdaptiveDpr] = useState(1.75);
+  const [flipRequest, setFlipRequest] = useState(0);
+  const [wakeRequest, setWakeRequest] = useState(0);
+  const [pullAnimation, setPullAnimation] = useState({ active: false, distance: 0 });
   const [viewportSize, setViewportSize] = useState(() => ({
     width: typeof window !== 'undefined' ? window.innerWidth : 1440,
     height: typeof window !== 'undefined' ? window.innerHeight : 900
   }));
   const { width: viewportWidth, height: viewportHeight } = viewportSize;
   const isMobile = viewportWidth < 768;
+  const renderDpr = Math.min(isMobile ? 1.25 : 1.75, adaptiveDpr);
   const originalCanvasRatio = viewportWidth <= 700
     ? 0.48
     : viewportWidth <= 1100
@@ -79,6 +87,19 @@ export default function Lanyard({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const requestFrames = useCallback((settleMs = 0) => {
+    window.clearTimeout(animationTimerRef.current);
+    setAnimationActive(true);
+    if (settleMs > 0) {
+      animationTimerRef.current = window.setTimeout(() => setAnimationActive(false), settleMs);
+    }
+  }, []);
+
+  useEffect(() => {
+    requestFrames(1600);
+    return () => window.clearTimeout(animationTimerRef.current);
+  }, [requestFrames]);
 
   const getTargetScroll = () => {
     const target = document.querySelector(nextPageTarget);
@@ -106,14 +127,90 @@ export default function Lanyard({
     });
   };
 
+  const startInteraction = event => {
+    if (event.button !== 0) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    pullGestureRef.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      moved: false,
+      pulling: false,
+      progress: 0
+    };
+    setWakeRequest(value => value + 1);
+    requestFrames();
+  };
+
+  const updateInteraction = event => {
+    const gesture = pullGestureRef.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+    const dx = event.clientX - gesture.x;
+    const dy = event.clientY - gesture.y;
+    if (Math.hypot(dx, dy) > 8) gesture.moved = true;
+
+    const pullThreshold = Math.max(32, window.innerHeight * 0.035);
+    if (!gesture.pulling && dy > pullThreshold && dy > Math.abs(dx) * 1.15) {
+      gesture.pulling = true;
+      beginPagePull();
+      setPullAnimation({ active: true, distance: 0 });
+    }
+
+    if (!gesture.pulling) return;
+    event.preventDefault();
+    const travel = Math.max(window.innerHeight * 0.52, 260);
+    gesture.progress = Math.min(Math.max((dy - pullThreshold) / travel, 0), 1);
+    const visualTravel = Math.max(window.innerHeight * 0.18, 140);
+    const visualProgress = Math.min(Math.max((dy - pullThreshold) / visualTravel, 0), 1);
+    setPullAnimation({ active: true, distance: visualProgress * 1.75 });
+    updatePagePull(gesture.progress);
+    requestFrames();
+  };
+
+  const finishInteraction = (event, cancelled = false) => {
+    const gesture = pullGestureRef.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    if (gesture.pulling) {
+      setPullAnimation({ active: false, distance: 0 });
+      finishPagePull(!cancelled && gesture.progress >= 0.35);
+      requestFrames(900);
+    } else if (!cancelled && !gesture.moved) {
+      setFlipRequest(value => value + 1);
+      requestFrames(850);
+    } else {
+      requestFrames(180);
+    }
+    pullGestureRef.current = null;
+  };
+
+  const handleInteractionKey = event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    setFlipRequest(value => value + 1);
+    requestFrames(850);
+  };
+
+  const handleFrameRateSample = useCallback(fps => {
+    setAdaptiveDpr(currentDpr => {
+      if (fps < 35) return Math.min(currentDpr, 1);
+      if (fps < 50) return Math.min(currentDpr, 1.25);
+      return currentDpr;
+    });
+  }, []);
+
   return (
     <div className="lanyard-wrapper">
       <Canvas
         camera={{ position, fov }}
-        dpr={[1, isMobile ? 1.25 : 1.75]}
+        dpr={renderDpr}
+        frameloop={animationActive ? 'always' : 'demand'}
         gl={{ alpha: transparent, antialias: true }}
         onCreated={({ gl }) => gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1)}
       >
+        <FrameRateSampler onSample={handleFrameRateSample} />
         <ambientLight intensity={Math.PI} />
         <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
           <Band
@@ -126,9 +223,10 @@ export default function Lanyard({
             frontImageArtwork={frontImageArtwork}
             lanyardWidth={lanyardWidth}
             cardScale={cardScale}
-            onPagePullStart={beginPagePull}
-            onPagePull={updatePagePull}
-            onPagePullEnd={finishPagePull}
+            flipRequest={flipRequest}
+            wakeRequest={wakeRequest}
+            pullActive={pullAnimation.active}
+            pullDistance={pullAnimation.distance}
           />
         </Physics>
         <Environment blur={0.75}>
@@ -138,8 +236,43 @@ export default function Lanyard({
           <Lightformer intensity={10} color="white" position={[-10, 0, 14]} rotation={[0, Math.PI / 2, Math.PI / 3]} scale={[100, 10, 1]} />
         </Environment>
       </Canvas>
+      <div
+        className="lanyard-interaction-area"
+        role="button"
+        tabIndex={0}
+        aria-label="Click to flip the Temple IEEE badge, or pull it down to continue"
+        onKeyDown={handleInteractionKey}
+        onPointerDown={startInteraction}
+        onPointerMove={updateInteraction}
+        onPointerUp={event => finishInteraction(event)}
+        onPointerCancel={event => finishInteraction(event, true)}
+      />
     </div>
   );
+}
+
+function FrameRateSampler({ onSample }) {
+  const sample = useRef({ elapsed: 0, frames: 0, warmup: 0.25 });
+
+  useFrame((_, delta) => {
+    const measurement = sample.current;
+    const safeDelta = Math.min(delta, 0.1);
+
+    if (measurement.warmup > 0) {
+      measurement.warmup -= safeDelta;
+      return;
+    }
+
+    measurement.elapsed += safeDelta;
+    measurement.frames += 1;
+    if (measurement.elapsed < 0.75) return;
+
+    onSample(measurement.frames / measurement.elapsed);
+    measurement.elapsed = 0;
+    measurement.frames = 0;
+  });
+
+  return null;
 }
 
 function Band({
@@ -154,9 +287,10 @@ function Band({
   frontImageArtwork = true,
   lanyardWidth = 1,
   cardScale = 4,
-  onPagePullStart,
-  onPagePull,
-  onPagePullEnd
+  flipRequest = 0,
+  wakeRequest = 0,
+  pullActive = false,
+  pullDistance = 0
 }) {
   const band = useRef();
   const fixed = useRef();
@@ -171,16 +305,12 @@ function Band({
   const strapTwistAngle = useRef(0);
   const strapTwistVelocity = useRef(0);
   const flipped = useRef(false);
-  const dragStart = useRef(null);
-  const dragOrigin = useRef(null);
-  const dragMoved = useRef(false);
-  const pagePullMode = useRef(false);
-  const pagePullProgress = useRef(0);
-  const lastDragRelease = useRef(0);
-  const returning = useRef(false);
+  const handledFlipRequest = useRef(0);
+  const handledWakeRequest = useRef(0);
+  const pullOrigin = useRef(null);
+  const pullReturning = useRef(false);
+  const [pullKinematic, setPullKinematic] = useState(false);
   const viewport = useThree(state => state.viewport);
-  const vec = useMemo(() => new THREE.Vector3(), []);
-  const dir = useMemo(() => new THREE.Vector3(), []);
   const bandSegments = isMobile ? MOBILE_BAND_SEGMENTS : DESKTOP_BAND_SEGMENTS;
   const ribbonGeometry = useMemo(() => createRibbonGeometry(bandSegments), [bandSegments]);
   const ribbonScratch = useMemo(
@@ -305,48 +435,42 @@ function Band({
   const [curve] = useState(
     () => new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()])
   );
-  const [dragged, drag] = useState(false);
-  const [hovered, hover] = useState(false);
-
   useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 0.7]);
   useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 0.7]);
   useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 0.7]);
   const connectorOffset = -1.2 + cardScale * 1.2;
   useSphericalJoint(j3, card, [[0, 0, 0], [0, connectorOffset, 0]]);
 
-  useEffect(() => {
-    if (!hovered) return undefined;
-    document.body.style.cursor = dragged ? 'grabbing' : 'grab';
-    return () => void (document.body.style.cursor = 'auto');
-  }, [hovered, dragged]);
-
   useFrame((state, delta) => {
-    if (dragged) {
-      [card, j1, j2, j3, fixed].forEach(ref => ref.current?.wakeUp());
-      if (returning.current && dragOrigin.current && card.current) {
+    delta = Math.min(delta, 1 / 30);
+    if (card.current && pullOrigin.current) {
+      if (pullActive) {
+        card.current.setNextKinematicTranslation({
+          x: pullOrigin.current.x,
+          y: pullOrigin.current.y - pullDistance,
+          z: pullOrigin.current.z
+        });
+      } else if (pullReturning.current) {
         const current = card.current.translation();
-        const blend = 1 - Math.exp(-delta * 11);
+        const blend = 1 - Math.exp(-delta * 12);
         const next = {
-          x: current.x + (dragOrigin.current.x - current.x) * blend,
-          y: current.y + (dragOrigin.current.y - current.y) * blend,
-          z: current.z + (dragOrigin.current.z - current.z) * blend
+          x: current.x + (pullOrigin.current.x - current.x) * blend,
+          y: current.y + (pullOrigin.current.y - current.y) * blend,
+          z: current.z + (pullOrigin.current.z - current.z) * blend
         };
         card.current.setNextKinematicTranslation(next);
-        if (Math.hypot(next.x - dragOrigin.current.x, next.y - dragOrigin.current.y, next.z - dragOrigin.current.z) < 0.025) {
-          card.current.setTranslation(dragOrigin.current, true);
+
+        if (Math.hypot(
+          next.x - pullOrigin.current.x,
+          next.y - pullOrigin.current.y,
+          next.z - pullOrigin.current.z
+        ) < 0.02) {
+          card.current.setTranslation(pullOrigin.current, true);
           card.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
-          returning.current = false;
-          drag(false);
+          pullReturning.current = false;
+          pullOrigin.current = null;
+          setPullKinematic(false);
         }
-      } else {
-        vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
-        dir.copy(vec).sub(state.camera.position).normalize();
-        vec.add(dir.multiplyScalar(state.camera.position.length()));
-        card.current?.setNextKinematicTranslation({
-          x: vec.x - dragged.x,
-          y: vec.y - dragged.y,
-          z: vec.z - dragged.z
-        });
       }
     }
 
@@ -412,7 +536,6 @@ function Band({
         );
       }
       positions.needsUpdate = true;
-      band.current.geometry.computeVertexNormals();
     }
 
     if (cardVisual.current) {
@@ -425,11 +548,6 @@ function Band({
   });
 
   curve.curveType = 'chordal';
-  const returnCard = () => {
-    returning.current = Boolean(dragOrigin.current);
-    if (!returning.current) drag(false);
-  };
-
   const toggleCardFace = () => {
     flipped.current = !flipped.current;
     flipTarget.current = flipped.current ? Math.PI : 0;
@@ -445,53 +563,31 @@ function Band({
     }
   };
 
-  const releaseCard = (event, cancelled = false) => {
-    event.target.releasePointerCapture?.(event.pointerId);
-    const wasPagePull = pagePullMode.current;
-    const wasDrag = dragMoved.current;
+  useEffect(() => {
+    if (flipRequest === handledFlipRequest.current) return;
+    handledFlipRequest.current = flipRequest;
+    [card, j1, j2, j3].forEach(ref => ref.current?.wakeUp());
+    toggleCardFace();
+  }, [flipRequest]);
 
-    if (wasPagePull || wasDrag || cancelled) lastDragRelease.current = performance.now();
+  useEffect(() => {
+    if (wakeRequest === handledWakeRequest.current) return;
+    handledWakeRequest.current = wakeRequest;
+    [card, j1, j2, j3].forEach(ref => ref.current?.wakeUp());
+  }, [wakeRequest]);
 
-    if (wasPagePull) {
-      onPagePullEnd?.(!cancelled && pagePullProgress.current >= 0.35);
-      returnCard();
-    } else if (wasDrag || cancelled) {
-      returnCard();
-    } else {
-      drag(false);
+  useEffect(() => {
+    if (pullActive) {
+      if (!pullOrigin.current && card.current) {
+        pullOrigin.current = { ...card.current.translation() };
+      }
+      pullReturning.current = false;
+      setPullKinematic(true);
+      [card, j1, j2, j3].forEach(ref => ref.current?.wakeUp());
+    } else if (pullOrigin.current) {
+      pullReturning.current = true;
     }
-
-    dragStart.current = null;
-    dragMoved.current = false;
-    pagePullMode.current = false;
-    pagePullProgress.current = 0;
-  };
-
-  const moveCard = event => {
-    if (!dragStart.current) return;
-    const clientX = event.clientX ?? event.nativeEvent?.clientX;
-    const clientY = event.clientY ?? event.nativeEvent?.clientY;
-    if (clientX == null || clientY == null) return;
-    const dx = clientX - dragStart.current.x;
-    const dy = clientY - dragStart.current.y;
-    const distance = Math.hypot(dx, dy);
-    if (distance > 8) dragMoved.current = true;
-
-    const pullThreshold = Math.max(80, window.innerHeight * 0.08);
-    const downwardIntent = dy > pullThreshold && dy > Math.abs(dx) * 1.15;
-    if (downwardIntent && !pagePullMode.current) {
-      pagePullMode.current = true;
-      returning.current = true;
-      onPagePullStart?.();
-    }
-
-    if (pagePullMode.current) {
-      const travel = Math.max(window.innerHeight * 0.55, 260);
-      pagePullProgress.current = Math.min(Math.max((dy - pullThreshold) / travel, 0), 1);
-      onPagePull?.(pagePullProgress.current);
-      return;
-    }
-  };
+  }, [pullActive]);
 
   return (
     <>
@@ -504,7 +600,7 @@ function Band({
           position={[1.4, 0, 0]}
           ref={card}
           {...segmentProps}
-          type={dragged ? 'kinematicPosition' : 'dynamic'}
+          type={pullKinematic ? 'kinematicPosition' : 'dynamic'}
           enabledRotations={[false, false, false]}
         >
           <CuboidCollider args={[(0.8 * cardScale) / 2.25, (1.125 * cardScale) / 2.25, 0.01]} />
@@ -512,28 +608,6 @@ function Band({
             ref={cardVisual}
             scale={cardScale}
             position={[0, -1.2, -0.05]}
-            onPointerOver={() => hover(true)}
-            onPointerOut={() => hover(false)}
-            onPointerMove={moveCard}
-            onPointerUp={event => releaseCard(event, false)}
-            onPointerCancel={event => releaseCard(event, true)}
-            onClick={event => {
-              event.stopPropagation();
-              if (performance.now() - lastDragRelease.current < 200) return;
-              toggleCardFace();
-            }}
-            onPointerDown={event => {
-              event.target.setPointerCapture(event.pointerId);
-              const clientX = event.clientX ?? event.nativeEvent?.clientX ?? 0;
-              const clientY = event.clientY ?? event.nativeEvent?.clientY ?? 0;
-              dragStart.current = { x: clientX, y: clientY };
-              dragOrigin.current = { ...card.current.translation() };
-              dragMoved.current = false;
-              pagePullMode.current = false;
-              pagePullProgress.current = 0;
-              returning.current = false;
-              drag(new THREE.Vector3().copy(event.point).sub(vec.copy(card.current.translation())));
-            }}
           >
             <mesh geometry={nodes.card.geometry}>
               <meshPhysicalMaterial
