@@ -8,11 +8,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=chillax@300,400,500,600,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/styles.css">
     <link rel="icon" type="image/png" href="../favicon.png">
 </head>
-<body>
+<body class="site-theme">
     <nav>
         <a href="../index.html" class="logo">Temple <span>IEEE</span></a>
         <ul class="nav-links">
@@ -52,40 +53,7 @@
         </div>
 
         <div class="carousel-container">
-            <div class="carousel-track">
-                
-                <div class="carousel-slide">
-                    <img src="../assets/images/events/FL-2026/FL26 Sase x Temple.png" alt="Drexel x Temple">
-                    <div class="carousel-slide-content">
-                        <span class="event-date-tag">Tuesday, October 20th, 2026</span>
-                        <h3>Career Advancement Workshop</h3>
-                        <p>Join us for a workshop on career development and advancement with Drexel!<br><br>
-                        &#128197; Tuesday, October 20th, 2026<br>
-                        &#9200; 6:00-8:00 PM<br>
-                        &#128205; Drexel University Campus, Bossone Auditorium<br><br>
-                        Hope to see you there!</p>
-                    </div>
-                </div>
-
-                <!-- Commenting out for later implementations (more future events)
-                <div class="carousel-slide">
-                    <img src="../assets/images/events/FL-2025/PCB_Celus_FL_25.jpg" alt="Company Speaker Series">
-                    <div class="carousel-slide-content">
-                        <span class="event-date-tag">Monthly Events</span>
-                        <h3>Company Speaker Series</h3>
-                        <p>Industry professionals share insights on career paths, technology trends, and professional development. Network directly with engineers and leaders from top companies.</p>
-                    </div>
-                </div>
-
-                <div class="carousel-slide">
-                    <img src="../assets/images/events/FL-2025/Potluck_FL_25.jpg" alt="IEEE Networking">
-                    <div class="carousel-slide-content">
-                        <span class="event-date-tag">Date TBD</span>
-                        <h3>IEEE Socials and Networking</h3>
-                        <p>Connect with fellow engineering students, enjoy delicious food, play board games, and have a great time.</p>
-                    </div>
-                </div>
-            </div> -->
+            <div class="carousel-track" data-upcoming-events aria-live="polite"></div>
 
             <button class="carousel-btn prev" aria-label="Previous slide">
                 <i class="fas fa-chevron-left"></i>

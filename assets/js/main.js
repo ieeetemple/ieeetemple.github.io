@@ -3,13 +3,127 @@
    ===================================================== */
 
 // Wait for DOM to be ready
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     initNavigation();
+    initPillNavigation();
     initDropdowns();
+    await initUpcomingEvents();
     initAnimations();
     initFilterTabs();
     initCarousel();
 });
+
+/* =====================================================
+   Pill Navigation
+   Shared-page adaptation of React Bits PillNav.
+   ===================================================== */
+function initPillNavigation() {
+    const nav = document.querySelector('nav');
+    const logo = nav?.querySelector('.logo');
+    const navLinks = nav?.querySelector('.nav-links');
+    if (!nav || !logo || !navLinks) return;
+
+    nav.classList.add('pill-nav-shell');
+    navLinks.classList.add('pill-nav-list');
+    logo.classList.add('pill-nav-logo');
+
+    const icon = document.createElement('img');
+    icon.src = '/favicon.png';
+    icon.alt = '';
+    icon.draggable = false;
+
+    const mark = document.createElement('span');
+    mark.className = 'pill-nav-mark';
+    mark.appendChild(icon);
+    logo.replaceChildren(mark);
+
+    navLinks.querySelectorAll(':scope > li > a').forEach(function(link) {
+        const labelNode = Array.from(link.childNodes).find(function(node) {
+            return node.nodeType === Node.TEXT_NODE && node.textContent.trim();
+        });
+        if (!labelNode) return;
+
+        const label = labelNode.textContent.trim();
+        const stack = document.createElement('span');
+        stack.className = 'pill-nav-label';
+
+        const face = document.createElement('span');
+        face.className = 'pill-nav-face';
+        face.textContent = label;
+
+        const alternateFace = document.createElement('span');
+        alternateFace.className = 'pill-nav-face pill-nav-face-alt';
+        alternateFace.textContent = label;
+        alternateFace.setAttribute('aria-hidden', 'true');
+
+        stack.append(face, alternateFace);
+        labelNode.replaceWith(stack);
+    });
+
+    requestAnimationFrame(function() {
+        nav.classList.add('pill-nav-ready');
+    });
+}
+
+/* =====================================================
+   Shared Upcoming Events Data
+   ===================================================== */
+async function initUpcomingEvents() {
+    const track = document.querySelector('[data-upcoming-events]');
+    if (!track) return;
+
+    try {
+        const response = await fetch('/assets/data/upcomingevent.json');
+        if (!response.ok) throw new Error('Unable to load events (' + response.status + ')');
+        const data = await response.json();
+        const upcoming = Array.isArray(data.upcoming) ? data.upcoming : [];
+
+        if (upcoming.length === 0) {
+            track.innerHTML = '<p class="carousel-status">No upcoming events have been announced yet.</p>';
+            return;
+        }
+
+        upcoming.forEach(function(event) {
+            const slide = document.createElement('div');
+            slide.className = 'carousel-slide';
+
+            const image = document.createElement('img');
+            image.src = event.image;
+            image.alt = event.alt || event.title || 'Temple IEEE event';
+
+            const content = document.createElement('div');
+            content.className = 'carousel-slide-content';
+
+            const dateTag = document.createElement('span');
+            dateTag.className = 'event-date-tag';
+            dateTag.textContent = event.dateLabel || event.date || 'Date to be announced';
+
+            const title = document.createElement('h3');
+            title.textContent = event.title || 'Upcoming Event';
+
+            const details = document.createElement('p');
+            const detailLines = [
+                event.description,
+                event.date ? '\ud83d\udcc5 ' + event.date : '',
+                event.time ? '\u23f0 ' + event.time : '',
+                event.location ? '\ud83d\udccd ' + event.location : '',
+                event.closing
+            ].filter(Boolean);
+            detailLines.forEach(function(line, index) {
+                if (index > 0) details.appendChild(document.createElement('br'));
+                if (index === 1 || index === detailLines.length - 1) details.appendChild(document.createElement('br'));
+                details.appendChild(document.createTextNode(line));
+            });
+
+            content.append(dateTag, title, details);
+            slide.append(image, content);
+            track.appendChild(slide);
+        });
+    } catch (error) {
+        console.error('Unable to load upcoming events:', error);
+        track.innerHTML = '<p class="carousel-status">Upcoming events are temporarily unavailable.</p>';
+    }
+}
 
 /* =====================================================
    Navigation
@@ -61,24 +175,16 @@ function initNavigation() {
     }
 
     // Navbar scroll effect
-    let lastScroll = 0;
     const nav = document.querySelector('nav');
-    
-    window.addEventListener('scroll', function() {
-        const currentScroll = window.pageYOffset;
-        
-        if (nav) {
-            if (currentScroll > 100) {
-                nav.style.background = 'rgba(26, 26, 26, 0.98)';
-                nav.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
-            } else {
-                nav.style.background = 'rgba(26, 26, 26, 0.95)';
-                nav.style.boxShadow = 'none';
-            }
-        }
-        
-        lastScroll = currentScroll;
-    });
+
+    if (nav) {
+        const updateNavState = function() {
+            nav.classList.toggle('is-scrolled', window.pageYOffset > 24);
+        };
+
+        updateNavState();
+        window.addEventListener('scroll', updateNavState, { passive: true });
+    }
 }
 
 /* =====================================================

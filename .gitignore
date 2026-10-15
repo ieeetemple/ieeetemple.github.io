@@ -1,5 +1,9 @@
 # Ignore everything
 
+node_modules/
+.vite/
+.impeccable/
+
 
 # Allow README
 !README.md

@@ -1,0 +1,17 @@
+{
+  "upcoming": [
+    {
+      "id": "fall-2026-career-advancement-workshop",
+      "showOnHomeCard": true,
+      "title": "Career Advancement Workshop",
+      "image": "/assets/images/events/FL-2026/FL26 Sase x Temple.png",
+      "alt": "Drexel and Temple Career Advancement Workshop flyer",
+      "dateLabel": "Tuesday, October 20th, 2026",
+      "date": "Tuesday, October 20th, 2026",
+      "time": "6:00-8:00 PM",
+      "location": "Drexel University Campus, Bossone Auditorium",
+      "description": "Join us for a workshop on career development and advancement with Drexel!",
+      "closing": "Hope to see you there!"
+    }
+  ]
+}
