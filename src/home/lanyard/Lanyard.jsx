@@ -63,7 +63,7 @@ export default function Lanyard({
   const pagePullingRef = useRef(false);
   const pullStartScrollRef = useRef(0);
   const [animationActive, setAnimationActive] = useState(true);
-  const [adaptiveDpr, setAdaptiveDpr] = useState(1.75);
+  const [performanceLevel, setPerformanceLevel] = useState(2);
   const [flipRequest, setFlipRequest] = useState(0);
   const [wakeRequest, setWakeRequest] = useState(0);
   const [pullAnimation, setPullAnimation] = useState({ active: false, distance: 0 });
@@ -73,7 +73,12 @@ export default function Lanyard({
   }));
   const { width: viewportWidth, height: viewportHeight } = viewportSize;
   const isMobile = viewportWidth < 768;
-  const renderDpr = Math.min(isMobile ? 1.25 : 1.75, adaptiveDpr);
+  const highQuality = performanceLevel === 2;
+  const renderDpr = performanceLevel === 0
+    ? 1
+    : performanceLevel === 1
+      ? 1.25
+      : isMobile ? 1.25 : 1.75;
   const originalCanvasRatio = viewportWidth <= 700
     ? 0.48
     : viewportWidth <= 1100
@@ -194,20 +199,21 @@ export default function Lanyard({
   };
 
   const handleFrameRateSample = useCallback(fps => {
-    setAdaptiveDpr(currentDpr => {
-      if (fps < 35) return Math.min(currentDpr, 1);
-      if (fps < 50) return Math.min(currentDpr, 1.25);
-      return currentDpr;
+    setPerformanceLevel(currentLevel => {
+      if (fps < 35) return Math.min(currentLevel, 0);
+      if (fps < 50) return Math.min(currentLevel, 1);
+      return currentLevel;
     });
   }, []);
 
   return (
     <div className="lanyard-wrapper">
       <Canvas
+        key={highQuality ? 'antialias-on' : 'antialias-off'}
         camera={{ position, fov }}
         dpr={renderDpr}
         frameloop={animationActive ? 'always' : 'demand'}
-        gl={{ alpha: transparent, antialias: true }}
+        gl={{ alpha: transparent, antialias: highQuality }}
         onCreated={({ gl }) => gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1)}
       >
         <FrameRateSampler onSample={handleFrameRateSample} />
@@ -223,18 +229,26 @@ export default function Lanyard({
             frontImageArtwork={frontImageArtwork}
             lanyardWidth={lanyardWidth}
             cardScale={cardScale}
+            highQuality={highQuality}
             flipRequest={flipRequest}
             wakeRequest={wakeRequest}
             pullActive={pullAnimation.active}
             pullDistance={pullAnimation.distance}
           />
         </Physics>
-        <Environment blur={0.75}>
-          <Lightformer intensity={2} color="white" position={[0, -1, 5]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
-          <Lightformer intensity={3} color="white" position={[-1, -1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
-          <Lightformer intensity={3} color="white" position={[1, 1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
-          <Lightformer intensity={10} color="white" position={[-10, 0, 14]} rotation={[0, Math.PI / 2, Math.PI / 3]} scale={[100, 10, 1]} />
-        </Environment>
+        {highQuality ? (
+          <Environment blur={0.75}>
+            <Lightformer intensity={2} color="white" position={[0, -1, 5]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
+            <Lightformer intensity={3} color="white" position={[-1, -1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
+            <Lightformer intensity={3} color="white" position={[1, 1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
+            <Lightformer intensity={10} color="white" position={[-10, 0, 14]} rotation={[0, Math.PI / 2, Math.PI / 3]} scale={[100, 10, 1]} />
+          </Environment>
+        ) : (
+          <>
+            <hemisphereLight intensity={1.25} groundColor="#17394b" />
+            <directionalLight intensity={2.5} position={[-4, 6, 8]} />
+          </>
+        )}
       </Canvas>
       <div
         className="lanyard-interaction-area"
@@ -287,6 +301,7 @@ function Band({
   frontImageArtwork = true,
   lanyardWidth = 1,
   cardScale = 4,
+  highQuality = true,
   flipRequest = 0,
   wakeRequest = 0,
   pullActive = false,
@@ -612,8 +627,8 @@ function Band({
             <mesh geometry={nodes.card.geometry}>
               <meshPhysicalMaterial
                 map={cardMap}
-                map-anisotropy={16}
-                clearcoat={isMobile ? 0 : 1}
+                map-anisotropy={highQuality ? 16 : 4}
+                clearcoat={highQuality && !isMobile ? 1 : 0}
                 clearcoatRoughness={0.15}
                 roughness={0.9}
                 metalness={0.8}

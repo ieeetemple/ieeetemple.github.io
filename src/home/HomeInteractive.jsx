@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import TextLoop from './TextLoop.jsx';
-import Lanyard from './lanyard/Lanyard.jsx';
+
+const Lanyard = lazy(() => import('./lanyard/Lanyard.jsx'));
 
 export default function HomeInteractive() {
   const [homeCardEvent, setHomeCardEvent] = useState(null);
   const [heroVisible, setHeroVisible] = useState(true);
   const [documentVisible, setDocumentVisible] = useState(() => !document.hidden);
+  const [threeReady, setThreeReady] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -46,7 +48,18 @@ export default function HomeInteractive() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  const renderLanyard = heroVisible && documentVisible;
+  useEffect(() => {
+    const revealThree = () => setThreeReady(true);
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(revealThree, { timeout: 1000 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timerId = window.setTimeout(revealThree, 200);
+    return () => window.clearTimeout(timerId);
+  }, []);
+
+  const renderLanyard = threeReady && heroVisible && documentVisible;
 
   return (
     <>
@@ -74,17 +87,19 @@ export default function HomeInteractive() {
       </div>
       <aside className="hero-lanyard" aria-label="Click the Temple IEEE badge to flip it, or drag it down to continue">
         {renderLanyard && (
-          <Lanyard
-            position={[0, 0, 20]}
-            gravity={[0, -40, 0]}
-            frontImage="/favicon.png"
-            backImage={homeCardEvent?.image ?? null}
-            frontCaption="CLICK OR PULL DOWN"
-            frontImageFit="contain"
-            backImageFit="contain"
-            lanyardWidth={0.5}
-            nextPageTarget="#about"
-          />
+          <Suspense fallback={null}>
+            <Lanyard
+              position={[0, 0, 20]}
+              gravity={[0, -40, 0]}
+              frontImage="/favicon.png"
+              backImage={homeCardEvent?.image ?? null}
+              frontCaption="CLICK OR PULL DOWN"
+              frontImageFit="contain"
+              backImageFit="contain"
+              lanyardWidth={0.5}
+              nextPageTarget="#about"
+            />
+          </Suspense>
         )}
       </aside>
     </>
