@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "npm run build && vite --host 127.0.0.1 --configLoader runner",
-    "build": "vite build --configLoader runner",
+    "build": "vite build --configLoader runner && vite build --config vite.board.config.js --configLoader runner",
     "preview": "npm run build && vite --host 127.0.0.1 --configLoader runner"
   },
   "dependencies": {

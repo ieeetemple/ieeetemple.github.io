@@ -3441,6 +3441,12 @@ body.site-theme .board-landing {
     min-height: 100dvh;
 }
 
+body.site-theme .board-text-cursor-root {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+}
+
 body.site-theme .board-landing .hero-content {
     position: absolute;
     inset: 0;
