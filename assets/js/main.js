@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     initAnimations();
     initFilterTabs();
     initCarousel();
+    initChapterPalette();
 });
 
 /* =====================================================
@@ -45,6 +46,53 @@ async function initSiteFooter() {
     } finally {
         footer.removeAttribute('aria-busy');
     }
+}
+
+/* =====================================================
+   Chapter Hub Palette
+   ===================================================== */
+function initChapterPalette() {
+    const page = document.querySelector('.chapters-page');
+    const cards = document.querySelectorAll('[data-chapter-card]');
+    const clickCursor = document.querySelector('.chapter-click-cursor');
+    if (!page || cards.length === 0) return;
+
+    const supportsCustomCursor = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    const setPalette = function(card) {
+        page.dataset.chapterPalette = card.dataset.palette || 'ieee';
+    };
+
+    cards.forEach(function(card) {
+        card.addEventListener('pointerenter', function(event) {
+            setPalette(card);
+            if (supportsCustomCursor && clickCursor) {
+                clickCursor.style.left = event.clientX + 'px';
+                clickCursor.style.top = event.clientY + 'px';
+                clickCursor.classList.add('is-visible');
+            }
+        });
+        card.addEventListener('pointermove', function(event) {
+            if (!supportsCustomCursor || !clickCursor) return;
+            clickCursor.style.left = event.clientX + 'px';
+            clickCursor.style.top = event.clientY + 'px';
+        });
+        card.addEventListener('pointerleave', function() {
+            clickCursor?.classList.remove('is-visible');
+        });
+        card.addEventListener('focus', function() {
+            setPalette(card);
+        });
+    });
+
+    document.querySelector('.chapter-map')?.addEventListener('pointerleave', function() {
+        page.dataset.chapterPalette = 'ieee';
+        clickCursor?.classList.remove('is-visible');
+    });
+
+    window.addEventListener('blur', function() {
+        clickCursor?.classList.remove('is-visible');
+    });
 }
 
 /* =====================================================
@@ -235,9 +283,9 @@ function initDropdowns() {
         
         if (!trigger || !menu) return;
         
-        // Mobile: toggle on click
+        // Only placeholder dropdown triggers open on mobile. Real links navigate.
         trigger.addEventListener('click', function(e) {
-            if (window.innerWidth <= 992) {
+            if (window.innerWidth <= 992 && trigger.getAttribute('href') === '#') {
                 e.preventDefault();
                 dropdown.classList.toggle('open');
             }
