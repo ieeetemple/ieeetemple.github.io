@@ -4,6 +4,7 @@
 
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', async function() {
+    initSiteFooter();
     initNavigation();
     initPillNavigation();
     initDropdowns();
@@ -12,6 +13,39 @@ document.addEventListener('DOMContentLoaded', async function() {
     initFilterTabs();
     initCarousel();
 });
+
+/* =====================================================
+   Shared Site Footer
+   ===================================================== */
+async function initSiteFooter() {
+    const footer = document.querySelector('[data-site-footer]');
+    if (!footer) return;
+
+    footer.setAttribute('aria-busy', 'true');
+
+    try {
+        const response = await fetch('/assets/data/footer.json');
+        if (!response.ok) throw new Error('Unable to load footer (' + response.status + ')');
+
+        const data = await response.json();
+        if (!data.primaryText || !data.creditText) {
+            throw new Error('Footer data is incomplete');
+        }
+
+        const primaryText = document.createElement('p');
+        primaryText.textContent = data.primaryText;
+
+        const creditText = document.createElement('p');
+        creditText.className = 'credit';
+        creditText.textContent = data.creditText;
+
+        footer.replaceChildren(primaryText, creditText);
+    } catch (error) {
+        console.error('Unable to load site footer:', error);
+    } finally {
+        footer.removeAttribute('aria-busy');
+    }
+}
 
 /* =====================================================
    Pill Navigation
