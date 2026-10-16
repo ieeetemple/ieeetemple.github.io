@@ -2500,6 +2500,7 @@ html.home-shell {
 
 .home-page .immersive-hero {
     position: relative;
+    isolation: isolate;
     width: 100%;
     min-height: 100svh;
     min-height: 100dvh;
@@ -2513,9 +2514,120 @@ html.home-shell {
     color: var(--immersive-white);
 }
 
+.home-page .hero-circuit-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.home-page .hero-circuit-symbol {
+    position: absolute;
+    width: clamp(4.5rem, 7vw, 7rem);
+    height: auto;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.48;
+}
+
+.home-page .hero-circuit-symbol--1 {
+    top: 10%;
+    left: 3%;
+    color: #b94654;
+    transform: rotate(-8deg);
+}
+
+.home-page .hero-circuit-symbol--2 {
+    top: 9%;
+    left: 23%;
+    color: #91a0aa;
+    transform: rotate(-5deg);
+}
+
+.home-page .hero-circuit-symbol--3 {
+    top: 25%;
+    left: 12%;
+    width: clamp(3.8rem, 5.5vw, 5.5rem);
+    color: #b88a23;
+    transform: rotate(8deg);
+}
+
+.home-page .hero-circuit-symbol--4 {
+    top: 52%;
+    left: 4%;
+    width: clamp(3.7rem, 5vw, 5rem);
+    color: #5c98bc;
+    transform: rotate(-12deg);
+}
+
+.home-page .hero-circuit-symbol--5 {
+    top: 11%;
+    right: 3%;
+    color: #b94654;
+    transform: rotate(10deg);
+}
+
+.home-page .hero-circuit-symbol--6 {
+    right: 5%;
+    bottom: 12%;
+    width: clamp(4rem, 5.5vw, 5.5rem);
+    color: #b88a23;
+    transform: rotate(8deg);
+}
+
+.home-page .hero-circuit-symbol--7 {
+    top: 51%;
+    right: 2%;
+    width: clamp(4.5rem, 6vw, 6rem);
+    color: #5c98bc;
+    transform: rotate(-6deg);
+}
+
+@media (max-width: 700px) {
+    .home-page .hero-circuit-symbol {
+        width: 4rem;
+        opacity: 0.4;
+    }
+
+    .home-page .hero-circuit-symbol--2,
+    .home-page .hero-circuit-symbol--4,
+    .home-page .hero-circuit-symbol--5 {
+        display: none;
+    }
+
+    .home-page .hero-circuit-symbol--1 {
+        top: 12%;
+        left: 3%;
+    }
+
+    .home-page .hero-circuit-symbol--3 {
+        top: 42%;
+        left: 2%;
+        width: 3.25rem;
+    }
+
+    .home-page .hero-circuit-symbol--6 {
+        right: 4%;
+        bottom: 10%;
+        width: 3.5rem;
+    }
+
+    .home-page .hero-circuit-symbol--7 {
+        top: 56%;
+        right: 1%;
+        width: 3.75rem;
+    }
+}
+
 .home-page .immersive-center {
     position: absolute;
     inset: 0;
+    z-index: 1;
     width: 100%;
 }
 

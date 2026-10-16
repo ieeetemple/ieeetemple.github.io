@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="circuit-resistor" viewBox="0 0 120 48">
+    <path d="M4 24h20l8-14 14 28 14-28 14 28 14-28 8 14h20"/>
+  </symbol>
+
+  <symbol id="circuit-inductor" viewBox="0 0 120 48">
+    <path d="M4 32h19c0-20 22-20 22 0 0-20 22-20 22 0 0-20 22-20 22 0h27"/>
+  </symbol>
+
+  <symbol id="circuit-diode" viewBox="0 0 120 56">
+    <path d="M4 28h28m56 0h28M32 8l48 20-48 20V8Zm52 1v38"/>
+  </symbol>
+
+  <symbol id="circuit-sine" viewBox="0 0 72 72">
+    <circle cx="36" cy="36" r="30"/>
+    <path d="M14 36c8-17 16-17 24 0s16 17 24 0"/>
+  </symbol>
+
+  <symbol id="circuit-waveform" viewBox="0 0 120 48">
+    <path d="M4 24h20l7-13 8 26 9-26 9 26 8-26 8 26 8-13h35"/>
+  </symbol>
+
+  <symbol id="circuit-capacitor" viewBox="0 0 120 56">
+    <path d="M4 28h42m28 0h42M46 8v40M74 8v40"/>
+  </symbol>
+
+  <symbol id="circuit-gate" viewBox="0 0 120 72">
+    <path d="M4 21h22m-22 30h22m68-15h22M26 10c28 0 51 9 68 26-17 17-40 26-68 26 14-18 14-34 0-52Z"/>
+  </symbol>
+</svg>
