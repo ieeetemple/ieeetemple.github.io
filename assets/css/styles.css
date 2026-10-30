@@ -4981,3 +4981,10 @@ body.site-theme.events-page .past-events-section .btn-primary:hover {
     background: transparent;
     color: var(--cream);
 }
+
+/* Let the Chapters footer continue the page background, like Events. */
+body.site-theme.chapters-page footer {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
