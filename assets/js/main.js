@@ -169,9 +169,13 @@ async function initUpcomingEvents() {
             const slide = document.createElement('div');
             slide.className = 'carousel-slide';
 
+            const poster = document.createElement('div');
+            poster.className = 'carousel-poster';
+
             const image = document.createElement('img');
             image.src = event.image;
             image.alt = event.alt || event.title || 'Temple IEEE event';
+            image.loading = 'lazy';
 
             const content = document.createElement('div');
             content.className = 'carousel-slide-content';
@@ -183,22 +187,35 @@ async function initUpcomingEvents() {
             const title = document.createElement('h3');
             title.textContent = event.title || 'Upcoming Event';
 
-            const details = document.createElement('p');
-            const detailLines = [
-                event.description,
-                event.date ? '\ud83d\udcc5 ' + event.date : '',
-                event.time ? '\u23f0 ' + event.time : '',
-                event.location ? '\ud83d\udccd ' + event.location : '',
-                event.closing
-            ].filter(Boolean);
-            detailLines.forEach(function(line, index) {
-                if (index > 0) details.appendChild(document.createElement('br'));
-                if (index === 1 || index === detailLines.length - 1) details.appendChild(document.createElement('br'));
-                details.appendChild(document.createTextNode(line));
+            const description = document.createElement('p');
+            description.className = 'carousel-event-description';
+            description.textContent = event.description || '';
+
+            const meta = document.createElement('div');
+            meta.className = 'carousel-event-meta';
+
+            [
+                ['fa-calendar-alt', event.date],
+                ['fa-clock', event.time],
+                ['fa-map-marker-alt', event.location]
+            ].forEach(function(item) {
+                if (!item[1]) return;
+                const row = document.createElement('p');
+                const icon = document.createElement('i');
+                icon.className = 'fas ' + item[0];
+                icon.setAttribute('aria-hidden', 'true');
+                row.append(icon, document.createTextNode(item[1]));
+                meta.appendChild(row);
             });
 
-            content.append(dateTag, title, details);
-            slide.append(image, content);
+            const closing = document.createElement('p');
+            closing.className = 'carousel-event-closing';
+            closing.textContent = event.closing || '';
+
+            poster.appendChild(image);
+            content.append(dateTag, title, description, meta);
+            if (event.closing) content.appendChild(closing);
+            slide.append(poster, content);
             track.appendChild(slide);
         });
     } catch (error) {
@@ -456,6 +473,11 @@ function initCarousel() {
     let currentIndex = 0;
     let autoPlayInterval;
     const autoPlayDelay = 5000; // 5 seconds
+    const hasMultipleSlides = slides.length > 1;
+
+    if (prevBtn) prevBtn.hidden = !hasMultipleSlides;
+    if (nextBtn) nextBtn.hidden = !hasMultipleSlides;
+    if (dotsContainer) dotsContainer.hidden = !hasMultipleSlides;
 
     // Create dots
     if (dotsContainer) {
@@ -501,6 +523,7 @@ function initCarousel() {
     }
 
     function startAutoPlay() {
+        if (!hasMultipleSlides) return;
         autoPlayInterval = setInterval(nextSlide, autoPlayDelay);
     }
 
