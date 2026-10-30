@@ -4744,3 +4744,72 @@ body.site-theme nav.pill-nav-shell .pill-nav-list > li > a.active {
         font-size: 0.63rem;
     }
 }
+
+/* Events landing hero matches the full-screen Home landing experience. */
+body.site-theme .events-hero {
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+}
+
+/* Keep the original event background fixed while every event section moves
+   upward together in the normal document flow. */
+body.site-theme.events-page {
+    position: relative;
+    isolation: isolate;
+}
+
+body.events-page .events-page-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+body.events-page .events-page-background .hero-bg {
+    z-index: 0;
+}
+
+body.events-page .events-page-background .site-circuit-backdrop {
+    z-index: 1;
+}
+
+body.site-theme.events-page .events-hero,
+body.site-theme.events-page .carousel-section {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+}
+
+body.site-theme.events-page .carousel-dots {
+    background: transparent;
+}
+
+body.site-theme.events-page .section-dark,
+body.site-theme.events-page .past-events-section,
+body.site-theme.events-page footer {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+}
+
+body.site-theme.events-page .past-events-section {
+    color: var(--cream);
+}
+
+body.site-theme.events-page .past-events-section .section-title,
+body.site-theme.events-page .past-events-section .section-tag {
+    color: var(--cream);
+}
+
+body.site-theme.events-page .past-events-section .btn-primary {
+    border-color: var(--cream);
+    background: var(--cream);
+    color: var(--charcoal);
+}
+
+body.site-theme.events-page .past-events-section .btn-primary:hover {
+    background: transparent;
+    color: var(--cream);
+}
