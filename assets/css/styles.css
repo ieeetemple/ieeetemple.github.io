@@ -1201,6 +1201,10 @@ footer .credit {
     margin: 0 auto;
 }
 
+.past-events-grid--preview > .past-event-card:nth-child(n + 4) {
+    display: none;
+}
+
 .past-event-card {
     background: white;
     border-radius: 20px;
@@ -1227,6 +1231,14 @@ footer .credit {
     height: 100%;
     object-fit: cover;
     transition: transform 0.4s ease;
+}
+
+.past-event-image--poster {
+    background: #e2ad7e;
+}
+
+.past-event-image--poster img {
+    object-fit: contain;
 }
 
 .past-event-card:hover .past-event-image img {
