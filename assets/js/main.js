@@ -8,12 +8,133 @@ document.addEventListener('DOMContentLoaded', async function() {
     initNavigation();
     initPillNavigation();
     initDropdowns();
+    initSlingControls();
     await initUpcomingEvents();
     initAnimations();
     initFilterTabs();
     initCarousel();
     initChapterPalette();
 });
+
+/* =====================================================
+   Elastic Sling Scroll Control
+   ===================================================== */
+function initSlingControls() {
+    document.querySelectorAll('[data-sling-control]').forEach(function(control) {
+        const pad = control.querySelector('.sling-pad');
+        const bands = control.querySelectorAll('.sling-band');
+        const particles = control.querySelectorAll('.sling-particle');
+        const targetSelector = control.dataset.scrollTarget;
+        if (!pad || !targetSelector) return;
+
+        const maxPull = 74;
+        const triggerDistance = 42;
+        let pointer = null;
+        let offset = { x: 0, y: 0 };
+        let moved = false;
+        let suppressClick = false;
+
+        const prefersReducedMotion = function() {
+            return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        };
+
+        const setOffset = function(x, y) {
+            offset = { x: x, y: y };
+            pad.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+            bands.forEach(function(band) {
+                band.setAttribute('x2', String(90 + x));
+                band.setAttribute('y2', String(90 + y));
+            });
+            control.classList.toggle('is-armed', Math.hypot(x, y) >= triggerDistance);
+        };
+
+        const scrollToTarget = function() {
+            document.querySelector(targetSelector)?.scrollIntoView({
+                behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                block: 'start'
+            });
+        };
+
+        const releaseParticles = function(x, y) {
+            if (prefersReducedMotion()) return;
+            const angle = Math.atan2(y || 1, x || 0);
+            particles.forEach(function(particle, index) {
+                const spread = (index - (particles.length - 1) / 2) * 0.18;
+                const distance = 42 + index * 8;
+                particle.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 0.9 },
+                    {
+                        transform: 'translate(' + (Math.cos(angle + spread) * distance) + 'px, ' + (Math.sin(angle + spread) * distance) + 'px) scale(0.25)',
+                        opacity: 0
+                    }
+                ], {
+                    duration: 360,
+                    delay: index * 18,
+                    easing: 'cubic-bezier(0.16, 1, 0.3, 1)'
+                });
+            });
+        };
+
+        const reset = function(activate) {
+            const releasedOffset = offset;
+            control.classList.remove('is-held', 'is-armed');
+            pad.style.transition = prefersReducedMotion() ? 'none' : 'transform 460ms cubic-bezier(0.16, 1, 0.3, 1)';
+            setOffset(0, 0);
+            window.setTimeout(function() {
+                pad.style.transition = '';
+            }, 480);
+            if (activate) {
+                releaseParticles(releasedOffset.x, releasedOffset.y);
+                scrollToTarget();
+            }
+        };
+
+        const finishPointer = function(event, cancelled) {
+            if (!pointer || event.pointerId !== pointer.id) return;
+            const activate = !cancelled && Math.hypot(offset.x, offset.y) >= triggerDistance;
+            suppressClick = moved;
+            pointer = null;
+            reset(activate);
+        };
+
+        pad.addEventListener('pointerdown', function(event) {
+            if (event.button !== 0) return;
+            pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
+            moved = false;
+            pad.setPointerCapture(event.pointerId);
+            pad.style.transition = 'none';
+            control.classList.add('is-held');
+        });
+
+        pad.addEventListener('pointermove', function(event) {
+            if (!pointer || event.pointerId !== pointer.id) return;
+            const deltaX = event.clientX - pointer.x;
+            const deltaY = event.clientY - pointer.y;
+            if (Math.hypot(deltaX, deltaY) > 5) moved = true;
+            const resist = function(value) {
+                return value * maxPull / (maxPull + Math.abs(value));
+            };
+            setOffset(resist(deltaX), resist(deltaY));
+        });
+
+        pad.addEventListener('pointerup', function(event) {
+            finishPointer(event, false);
+        });
+        pad.addEventListener('pointercancel', function(event) {
+            finishPointer(event, true);
+        });
+        pad.addEventListener('lostpointercapture', function(event) {
+            if (pointer) finishPointer(event, true);
+        });
+        pad.addEventListener('click', function() {
+            if (suppressClick) {
+                suppressClick = false;
+                return;
+            }
+            scrollToTarget();
+        });
+    });
+}
 
 /* =====================================================
    Shared Site Footer
