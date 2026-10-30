@@ -3675,6 +3675,30 @@ body.site-theme.chapters-page[data-chapter-palette="wie"] {
         linear-gradient(145deg, #210929 0%, #58246b 55%, #16071d 100%);
 }
 
+body.site-theme.chapters-page[data-chapter-palette="hkn"] {
+    --chapter-wash:
+        linear-gradient(
+            to top right,
+            transparent 18%,
+            rgba(247, 250, 252, 0.03) 28%,
+            rgba(247, 250, 252, 0.09) 39%,
+            rgba(247, 250, 252, 0.17) 50%,
+            rgba(247, 250, 252, 0.1) 61%,
+            rgba(247, 250, 252, 0.04) 70%,
+            transparent 80%
+        ),
+        linear-gradient(
+            to top right,
+            transparent 26%,
+            rgba(213, 43, 56, 0.03) 40%,
+            rgba(213, 43, 56, 0.12) 58%,
+            rgba(213, 43, 56, 0.3) 80%,
+            rgba(213, 43, 56, 0.48) 100%
+        ),
+        radial-gradient(ellipse at 18% 82%, rgba(0, 98, 155, 0.3), transparent 58%),
+        linear-gradient(145deg, #071822 0%, #102f40 54%, #06131b 100%);
+}
+
 .chapter-hub {
     position: relative;
     z-index: 1;
@@ -3786,7 +3810,7 @@ body.site-theme.chapters-page[data-chapter-palette="wie"] {
 .chapter-grid {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: clamp(1rem, 2.5vw, 2rem);
 }
 
@@ -3821,6 +3845,16 @@ body.site-theme.chapters-page[data-chapter-palette="wie"] {
 .chapter-card--wie .chapter-card__image img {
     width: 88%;
     height: 88%;
+}
+
+.chapter-card--hkn .chapter-card__image img {
+    width: 94%;
+    height: 94%;
+}
+
+.chapter-card--hkn .chapter-card__image {
+    padding: 0.45rem;
+    background: #ffffff;
 }
 
 .chapter-card:hover .chapter-card__image img,
@@ -3894,6 +3928,13 @@ body.site-theme.chapters-page[data-chapter-palette="wie"] {
 @media (hover: none), (pointer: coarse) {
     .chapter-click-cursor {
         display: none;
+    }
+}
+
+@media (max-width: 1050px) {
+    .chapter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        row-gap: 2.5rem;
     }
 }
 
