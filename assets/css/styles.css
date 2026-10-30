@@ -4949,10 +4949,23 @@ body.site-theme.events-page .carousel-dots {
 /* Upcoming events: poster and matching details travel as one slide. */
 body.site-theme.events-page .carousel-container {
     max-width: 1180px;
+    overflow: visible;
     background: transparent;
     border: 0;
     border-radius: 0;
     box-shadow: none;
+}
+
+body.site-theme.events-page .carousel-viewport {
+    overflow: hidden;
+}
+
+body.site-theme.events-page .carousel-btn.prev {
+    left: -3.75rem;
+}
+
+body.site-theme.events-page .carousel-btn.next {
+    right: -3.75rem;
 }
 
 body.site-theme.events-page .carousel-track {
@@ -5051,6 +5064,14 @@ body.site-theme.events-page .carousel-dots[hidden] {
 }
 
 @media (max-width: 820px) {
+    body.site-theme.events-page .carousel-btn.prev {
+        left: 0.5rem;
+    }
+
+    body.site-theme.events-page .carousel-btn.next {
+        right: 0.5rem;
+    }
+
     body.site-theme.events-page .carousel-slide {
         grid-template-columns: 1fr;
         min-height: 0;

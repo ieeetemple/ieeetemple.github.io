@@ -592,8 +592,6 @@ function initCarousel() {
     if (!track || slides.length === 0) return;
 
     let currentIndex = 0;
-    let autoPlayInterval;
-    const autoPlayDelay = 5000; // 5 seconds
     const hasMultipleSlides = slides.length > 1;
 
     if (prevBtn) prevBtn.hidden = !hasMultipleSlides;
@@ -609,7 +607,6 @@ function initCarousel() {
             dot.setAttribute('aria-label', 'Go to slide ' + (index + 1));
             dot.addEventListener('click', function() {
                 goToSlide(index);
-                resetAutoPlay();
             });
             dotsContainer.appendChild(dot);
         });
@@ -643,28 +640,16 @@ function initCarousel() {
         goToSlide(currentIndex - 1);
     }
 
-    function startAutoPlay() {
-        if (!hasMultipleSlides) return;
-        autoPlayInterval = setInterval(nextSlide, autoPlayDelay);
-    }
-
-    function resetAutoPlay() {
-        clearInterval(autoPlayInterval);
-        startAutoPlay();
-    }
-
     // Event listeners
     if (prevBtn) {
         prevBtn.addEventListener('click', function() {
             prevSlide();
-            resetAutoPlay();
         });
     }
 
     if (nextBtn) {
         nextBtn.addEventListener('click', function() {
             nextSlide();
-            resetAutoPlay();
         });
     }
 
@@ -691,7 +676,6 @@ function initCarousel() {
             } else {
                 prevSlide();
             }
-            resetAutoPlay();
         }
     }
 
@@ -700,24 +684,10 @@ function initCarousel() {
     carousel.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowLeft') {
             prevSlide();
-            resetAutoPlay();
         } else if (e.key === 'ArrowRight') {
             nextSlide();
-            resetAutoPlay();
         }
     });
-
-    // Pause on hover
-    carousel.addEventListener('mouseenter', function() {
-        clearInterval(autoPlayInterval);
-    });
-
-    carousel.addEventListener('mouseleave', function() {
-        startAutoPlay();
-    });
-
-    // Start autoplay
-    startAutoPlay();
 }
 
 /* =====================================================

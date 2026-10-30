@@ -3,6 +3,18 @@ import TextLoop from './TextLoop.jsx';
 
 const Lanyard = lazy(() => import('./lanyard/Lanyard.jsx'));
 
+function selectNextHomeEvent(events, now = Date.now()) {
+  return events
+    .filter(event => event.showOnHomeCard)
+    .map(event => ({
+      event,
+      start: Date.parse(event.startAt),
+      end: Date.parse(event.endAt ?? event.startAt)
+    }))
+    .filter(({ start, end }) => Number.isFinite(start) && Number.isFinite(end) && end > now)
+    .sort((a, b) => a.start - b.start)[0]?.event ?? null;
+}
+
 export default function HomeInteractive() {
   const [homeCardEvent, setHomeCardEvent] = useState(null);
   const [heroVisible, setHeroVisible] = useState(true);
@@ -11,6 +23,7 @@ export default function HomeInteractive() {
 
   useEffect(() => {
     let active = true;
+    let rolloverTimer;
 
     fetch('/assets/data/upcomingevent.json')
       .then(response => {
@@ -20,12 +33,25 @@ export default function HomeInteractive() {
       .then(data => {
         if (!active) return;
         const upcoming = Array.isArray(data.upcoming) ? data.upcoming : [];
-        setHomeCardEvent(upcoming.find(event => event.showOnHomeCard) ?? upcoming[0] ?? null);
+
+        const updateHomeCard = () => {
+          const nextEvent = selectNextHomeEvent(upcoming);
+          setHomeCardEvent(nextEvent);
+
+          window.clearTimeout(rolloverTimer);
+          if (!nextEvent) return;
+
+          const rolloverDelay = Date.parse(nextEvent.endAt ?? nextEvent.startAt) - Date.now() + 1000;
+          rolloverTimer = window.setTimeout(updateHomeCard, Math.min(rolloverDelay, 2147483647));
+        };
+
+        updateHomeCard();
       })
       .catch(error => console.error('Unable to load the home card event:', error));
 
     return () => {
       active = false;
+      window.clearTimeout(rolloverTimer);
     };
   }, []);
 
