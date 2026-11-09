@@ -1,34 +1,19 @@
 {
   "upcoming": [
     {
-      "id": "fall-2026-pumpkin-carving",
+      "id": "fall-2026-sac-workshop-week",
       "showOnHomeCard": true,
-      "title": "Pumpkin Carving Event",
-      "image": "/assets/images/events/FL-2026/FL26 Pumpkin Carving.png",
-      "alt": "Temple IEEE Pumpkin Carving Event flyer",
-      "dateLabel": "Friday, October 30th, 2026",
-      "date": "Friday, October 30th, 2026",
-      "time": "5:00–7:00 PM",
-      "startAt": "2026-10-30T17:00:00-04:00",
-      "endAt": "2026-10-30T19:00:00-04:00",
-      "location": "Engineering Building, Room 201A",
-      "description": "Join Temple IEEE for a Halloween-themed pumpkin carving event where you’ll design your own pumpkin and illuminate it using a PCB you solder yourself!",
-      "closing": "Limited space available! Sign up before spots fill up. 🎃✨"
-    },
-    {
-      "id": "fall-2026-ieee-bake-sale",
-      "showOnHomeCard": true,
-      "title": "IEEE Bake Sale",
-      "image": "/assets/images/events/FL-2026/FL26 IEEE Bake Sale.png",
-      "alt": "Temple IEEE Bake Sale flyer with illustrated baked goods",
-      "dateLabel": "Thursday, November 5th, 2026",
-      "date": "Thursday, November 5th, 2026",
-      "time": "10:00 AM - 4:00 PM",
-      "startAt": "2026-11-05T10:00:00-05:00",
-      "endAt": "2026-11-05T16:00:00-05:00",
-      "location": "Engineering Building, Lobby",
-      "description": "Stop by for homemade baked goods and sweet treats while supporting Temple IEEE.",
-      "closing": "Bring your friends, satisfy your sweet tooth, and support IEEE!"
+      "title": "SAC Workshop Week",
+      "image": "/assets/images/events/FL-2026/SAC%20Workshop%20Week/1.png",
+      "alt": "SAC Workshop Week schedule featuring MicroMouse, Ethics, Brown Bag, Mini Pupper, and SumoBot sessions",
+      "dateLabel": "November 9–13, 2026",
+      "date": "Monday–Friday, November 9–13, 2026",
+      "time": "5:00–7:00 PM each day",
+      "startAt": "2026-11-09T17:00:00-05:00",
+      "endAt": "2026-11-13T19:00:00-05:00",
+      "location": "Engineering Building: Room 102 (Mon., Tue., Thu., Fri.) and Room 301A (Wed.)",
+      "description": "SAC is a regional IEEE conference where students connect, develop leadership skills, and gain valuable professional and technical experience. Join us throughout the week to explore this year’s competitions, learn strategies and tips, and prepare to put your best foot forward.",
+      "closing": "Mon: MicroMouse · Tue: Ethics · Wed: Brown Bag · Thu: Mini Pupper · Fri: SumoBot 🌟🤝"
     }
   ]
 }
