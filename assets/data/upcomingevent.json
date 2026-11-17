@@ -1,19 +1,19 @@
 {
   "upcoming": [
     {
-      "id": "fall-2026-sac-workshop-week",
+      "id": "fall-2026-pie-the-eboard",
       "showOnHomeCard": true,
-      "title": "SAC Workshop Week",
-      "image": "/assets/images/events/FL-2026/SAC%20Workshop%20Week/1.png",
-      "alt": "SAC Workshop Week schedule featuring MicroMouse, Ethics, Brown Bag, Mini Pupper, and SumoBot sessions",
-      "dateLabel": "November 9–13, 2026",
-      "date": "Monday–Friday, November 9–13, 2026",
-      "time": "5:00–7:00 PM each day",
-      "startAt": "2026-11-09T17:00:00-05:00",
-      "endAt": "2026-11-13T19:00:00-05:00",
-      "location": "Engineering Building: Room 102 (Mon., Tue., Thu., Fri.) and Room 301A (Wed.)",
-      "description": "SAC is a regional IEEE conference where students connect, develop leadership skills, and gain valuable professional and technical experience. Join us throughout the week to explore this year’s competitions, learn strategies and tips, and prepare to put your best foot forward.",
-      "closing": "Mon: MicroMouse · Tue: Ethics · Wed: Brown Bag · Thu: Mini Pupper · Fri: SumoBot 🌟🤝"
+      "title": "Pie the Eboard",
+      "image": "/assets/images/events/FL-2026/FL26%20Pie%20Eboard%20Event.png",
+      "alt": "Temple IEEE Pie the Eboard event flyer",
+      "dateLabel": "November 20, 2026",
+      "date": "Friday, November 20, 2026",
+      "time": "12:00–2:00 PM",
+      "startAt": "2026-11-20T12:00:00-05:00",
+      "endAt": "2026-11-20T14:00:00-05:00",
+      "location": "Engineering Building, Lobby",
+      "description": "Come pie an IEEE Eboard member for $5! There may be guest appearances 👀",
+      "closing": "$5 per pie · Candidates: Damien, Richard, Foday, Santi, Shahzad, Mennah, and Nika"
     }
   ]
 }
